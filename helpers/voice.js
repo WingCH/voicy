@@ -1,7 +1,13 @@
 // Dependencies
 const urlFinder = require('./url')
-const { findChat, findVoice, addVoice } = require('./db')
-const { report } = require('./report')
+const {
+  findChat,
+  findVoice,
+  addVoice
+} = require('./db')
+const {
+  report
+} = require('./report')
 const urlToText = require('./urlToText')
 const _ = require('lodash')
 
@@ -55,25 +61,28 @@ async function handleMessage(ctx) {
  */
 async function sendTranscription(ctx, url, chat) {
   // Get message
-  const message = ctx.message || ctx.update.channel_post
+  const originalMessage = ctx.message || ctx.update.channel_post
   // Send initial message
-  const sentMessage = await sendVoiceRecognitionMessage(ctx, message)
+  const sentMessage = await sendVoiceRecognitionMessage(ctx, originalMessage)
 
-  console.log(message);
-  console.log("message id: ", message.message_id);
+  // console.log(message);
+  // console.log('message id: ', message.message_id);
 
-  
+  console.log('originalMessage: ', originalMessage);
+  console.log('originalMessage: ', originalMessage.message_id);
+  console.log('originalMessage: ', typeof originalMessage);
+
   // Get language
   const lan = languageFromChat(chat)
   // Try to find existing voice message
   const dbvoice = await findVoice(url, lan, chat.engine)
   if (dbvoice) {
-    const text = chat.timecodesEnabled
-      ? dbvoice.textWithTimecodes
-        ? dbvoice.textWithTimecodes.map(t => `${t[0]}:\n${t[1]}`).join('\n')
-        : dbvoice.text
-      : dbvoice.text
-    updateMessagewithTranscription(ctx, sentMessage, text, chat,false, message.message_id)
+    const text = chat.timecodesEnabled ?
+      dbvoice.textWithTimecodes ?
+      dbvoice.textWithTimecodes.map(t => `${t[0]}:\n${t[1]}`).join('\n') :
+      dbvoice.text :
+      dbvoice.text
+    updateMessagewithTranscription(ctx, sentMessage, text, chat, false, originalMessage)
     return
   }
   // Check if ok with google engine
@@ -83,25 +92,28 @@ async function sendTranscription(ctx, url, chat) {
   }
   try {
     // Convert url to text
-    const { textWithTimecodes, duration } = await urlToText(
+    const {
+      textWithTimecodes,
+      duration
+    } = await urlToText(
       url,
       sanitizeChat(chat)
     )
     // Send trancription to user
-    const text = chat.timecodesEnabled
-      ? textWithTimecodes.map(t => `${t[0]}:\n${t[1]}`).join('\n')
-      : textWithTimecodes
-          .map(t => t[1].trim())
-          .filter(v => !!v)
-          .join('. ')
-    await updateMessagewithTranscription(ctx, sentMessage, text, chat)
+    const text = chat.timecodesEnabled ?
+      textWithTimecodes.map(t => `${t[0]}:\n${t[1]}`).join('\n') :
+      textWithTimecodes
+      .map(t => t[1].trim())
+      .filter(v => !!v)
+      .join('. ')
+    await updateMessagewithTranscription(ctx, sentMessage, text, chat, false, originalMessage)
     // Save voice to db
     await addVoice(
       url,
       textWithTimecodes
-        .map(t => t[1].trim())
-        .filter(v => !!v)
-        .join('. '),
+      .map(t => t[1].trim())
+      .filter(v => !!v)
+      .join('. '),
       chat,
       duration,
       textWithTimecodes
@@ -134,11 +146,11 @@ async function sendAction(ctx, url, chat) {
   // Try to find existing voice message
   const dbvoice = await findVoice(url, lan, chat.engine)
   if (dbvoice) {
-    const text = chat.timecodesEnabled
-      ? dbvoice.textWithTimecodes
-        ? dbvoice.textWithTimecodes.map(t => `${t[0]}:\n${t[1]}`).join('\n')
-        : dbvoice.text
-      : dbvoice.text
+    const text = chat.timecodesEnabled ?
+      dbvoice.textWithTimecodes ?
+      dbvoice.textWithTimecodes.map(t => `${t[0]}:\n${t[1]}`).join('\n') :
+      dbvoice.text :
+      dbvoice.text
     sendMessageWithTranscription(ctx, text, chat)
     return
   }
@@ -148,25 +160,28 @@ async function sendAction(ctx, url, chat) {
   }
   try {
     // Convert utl to text
-    const { textWithTimecodes, duration } = await urlToText(
+    const {
+      textWithTimecodes,
+      duration
+    } = await urlToText(
       url,
       sanitizeChat(chat)
     )
     // Send trancription to user
-    const text = chat.timecodesEnabled
-      ? textWithTimecodes.map(t => `${t[0]}:\n${t[1]}`).join('\n')
-      : textWithTimecodes
-          .map(t => t[1].trim())
-          .filter(v => !!v)
-          .join('. ')
+    const text = chat.timecodesEnabled ?
+      textWithTimecodes.map(t => `${t[0]}:\n${t[1]}`).join('\n') :
+      textWithTimecodes
+      .map(t => t[1].trim())
+      .filter(v => !!v)
+      .join('. ')
     await sendMessageWithTranscription(ctx, text, chat)
     // Save voice to db
     await addVoice(
       url,
       textWithTimecodes
-        .map(t => t[1].trim())
-        .filter(v => !!v)
-        .join('. '),
+      .map(t => t[1].trim())
+      .filter(v => !!v)
+      .join('. '),
       chat,
       duration,
       textWithTimecodes
@@ -191,37 +206,44 @@ async function sendAction(ctx, url, chat) {
  * @param {String} text Text that the message should be updated to
  * @param {Mongoose:Chat} chat Relevant to this voice chat
  * @param {Boolean} markdown Whether to support markdown or not
- * @param {String} original_message_id use for reply original message
+ * @param {Telegraf:Message} originalMessage use for reply original message
  */
-async function updateMessagewithTranscription(ctx, msg, text, chat, markdown, original_message_id) {
+async function updateMessagewithTranscription(ctx, msg, text, chat, markdown, originalMessage) {
   // Create options
   const options = {}
   if (!text || markdown) {
     options.parse_mode = 'Markdown'
   }
-  if (!text || text.length <= 4000) {
-    // Edit message
-    // await ctx.telegram.editMessageText(
-    //   msg.chat.id,
-    //   msg.message_id,
-    //   null,
-    //   text || ctx.i18n.t('speak_clearly'),
-    //   options
-    // )
 
-    //Delete Voice Recognition Message
-    ctx.telegram.deleteMessage(
-      msg.chat.id,
-      msg.message_id
-    )
-    console.log("original_message_id: ",original_message_id);
-    
-    //reply original message with Transcription Message
-    await ctx.replyWithMarkdown(
-      text || ctx.i18n.t('speak_clearly'), {
-        reply_to_message_id: original_message_id,
-      }
-    )
+
+  if (!text || text.length <= 4000) {
+
+    if (typeof originalMessage !== 'undefined') {
+      // Delete Voice Recognition Message
+      ctx.telegram.deleteMessage(
+        msg.chat.id,
+        msg.message_id
+      );
+
+      // reply original message with Transcription Message
+      await ctx.replyWithMarkdown(
+        text || ctx.i18n.t('speak_clearly'), {
+          reply_to_message_id: originalMessage.message_id,
+        }
+      )
+    } else {
+      //**original approach should not be used
+      //Edit message
+      await ctx.telegram.editMessageText(
+        msg.chat.id,
+        msg.message_id,
+        null,
+        text || ctx.i18n.t('speak_clearly'),
+        options
+      )
+    }
+
+
   } else {
     // Get chunks
     const chunks = text.match(/[\s\S]{1,4000}/g)
@@ -299,8 +321,7 @@ async function updateMessagewithError(ctx, msg, chat, error) {
       msg.chat.id,
       msg.message_id,
       null,
-      text,
-      {
+      text, {
         parse_mode: 'Markdown',
       }
     )
@@ -332,7 +353,7 @@ function updateWithGoogleKeyError(ctx, sentMessage, chat) {
     sentMessage,
     ctx.i18n.t('google_error_creds'),
     chat,
-    true
+    true,
   )
 }
 
