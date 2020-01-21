@@ -1,0 +1,43 @@
+files_false: '📁 太好了！從現在起，*Voicy*將*ignore*這個對話中的所有語音檔。'
+files_true: '📁 太好了！從現在起，*Voicy*將*recognize*這個對話中的所有語音檔。'
+google: '要設立Google語音辨識，請回覆此訊息，並在訊息中輸入Google雲端憑證檔案（.json格式）。您不知道這是什麼嗎？還是您不知道如何取得這個檔案？來觀看我們的[快速教學](https://medium.com/@nikitakolmogorov/setting-up-google-speech-for-voicybot-b806545750f8)吧！'
+google_error_doc: '抱歉！您的回覆需要是雲端憑證。'
+google_error_mime: "抱歉！檔案類型需要是'text/plain'。"
+google_success: '恭喜！*Voicy*已取得*${projectId}*Google雲端項目的憑證檔案。現在，你可以開始使用Google語音辨識了！'
+help: |
+  😎 *Voicy*會把收到的所有語音訊息及語音檔（.ogg、.flac、.wav及.mp3）轉換成文字。您可在私人對話中使用*Voicy*，也可以把軟體加到群組對話。
+
+  如果您希望在私人對話中使用這個軟體，請與您的對話對象設立一個對話群組，然後把*Voicy*加入該群組。如果您希望把*Voicy*加入群組對話，請在群組檔案中加入該軟體，或在*Voicy*的軟體檔案中，把軟體加群組內。
+
+  /help — 展示這個訊息😱
+  /engine — 讓您選擇語音辨識軟體：wit.ai、Yandex SpeechKit或Google Speech ⚙
+  /language — 讓您選擇需要語言辨識的語言📣
+  /lock — 封鎖或容許管理員以外的人士在群組對話中使用命令🔑
+  /files — 指令軟體嘗試轉換語音檔案或無視它們📁
+  /silent —除非出現類似`語音辨識已啓動`的訊息，否則切換至靜音模式😶
+  /google — 設立Google Speech的雲端憑證檔案🦆
+
+  您喜歡這個軟體嗎？請[在這裏]為我們留下評語吧(https://telegram.me/storebot?start=voicybot) 👍
+
+  如果您有任何意見或問題，請與我的設計者聯絡吧！ — @borodutch\\_support 🦄 P.S., if you want to help this bot, please, donate through the [GitHub Sponsors program here](https://github.com/sponsors/backmeupplz).
+error_group: '😅 抱歉！這項指令隻適用於群組對話。'
+lock_true: '🔑 很好！從現在起，*Voicy*隻會回應本對話中的*admins*的指令。'
+lock_false: '🔑 很好！從現在起，*Voicy*隻會回應本對話中的*anyone*的指令。'
+silent_true: '😶 太棒了！從現在起，您可在*silent mode*中使用*Voicy*：除了語音輸入外，它不會傳送任何信息。'
+silent_false: '😏 太棒了！從現在起，您可在*usual mode*中使用*Voicy*：在收到語音訊息後，它會發送`語音辨識已啓動`的訊息。'
+start: |
+  👋 各位好！ *Voicy*是一個語音辨識係統，它可以把所有語音訊息及語音檔（包括.ogg、.flac、.wav及.mp3）轉換成文字。
+
+  *Voicy*支援三個語音辨識係統：wit.ai、Yandex SpeechKit及Google Speech。係統預設使用wit.ai，但您可在/engine中隨時轉換至Google Speech或Yandex SpeechKit。如果您需要更多訊息，請參閱/help。
+engine: '👋 請選擇語音辨識係統。 Google Speech的準確性較好，並且支援超過50秒的語音檔。然而，您需要花費一點時間設立Google雲端憑證。 Yandex SpeechKit是一個免費軟體，它的準確性也不錯，而且這個程式的隱私度較高。這個軟體也支援超過50秒的語音檔。然而，這個軟體支援的語言較少。 Wit.ai也是一個免費軟體，它的準確性較低，而且並不支援超過50秒的語音檔。然而，這個軟體可支援多種不同語言。請註意，三種軟體可支援的語言有所不同，您可根據自己的需要選擇最適合您的軟體。'
+callback_error: '隻有啓動命令的人可以從選項中選擇'
+engine_success: '👍 現在，*Voicy*可在本對話中使用*${engine}*了！謝謝！可別忘了設定語言呢。'
+language: '👋 請選擇您希望${engine}辨識的語言。'
+language_without_engine: '👋 請選擇您希望辨識的語言。'
+language_success: '👍 現在，*Voicy*可在本對話中說*${language}* (${engine})了！謝謝！'
+error_twenty: '_👮 我無法辨識超過20MB的語音訊息_'
+initiated: '_🦄 語音辨識啓動中..._'
+speak_clearly: '_👮 您可以說得清楚一點嗎？我無法辨識_'
+error: '_👮 我無法辨識_'
+google_error_creds: '😮 請以/google命令設立Google憑證，或以/engine命令更改使用的係統。您尚未設立憑證。'
+ashmanov_language: Nanosemantics only supports Russian. Please, change /engine to change /language first.
