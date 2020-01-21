@@ -58,6 +58,11 @@ async function sendTranscription(ctx, url, chat) {
   const message = ctx.message || ctx.update.channel_post
   // Send initial message
   const sentMessage = await sendVoiceRecognitionMessage(ctx, message)
+
+  console.log(message);
+  console.log("message id: ", message.message_id);
+
+  
   // Get language
   const lan = languageFromChat(chat)
   // Try to find existing voice message
@@ -68,7 +73,7 @@ async function sendTranscription(ctx, url, chat) {
         ? dbvoice.textWithTimecodes.map(t => `${t[0]}:\n${t[1]}`).join('\n')
         : dbvoice.text
       : dbvoice.text
-    updateMessagewithTranscription(ctx, sentMessage, text, chat)
+    updateMessagewithTranscription(ctx, sentMessage, text, chat,false, message.message_id)
     return
   }
   // Check if ok with google engine
@@ -186,8 +191,9 @@ async function sendAction(ctx, url, chat) {
  * @param {String} text Text that the message should be updated to
  * @param {Mongoose:Chat} chat Relevant to this voice chat
  * @param {Boolean} markdown Whether to support markdown or not
+ * @param {String} original_message_id use for reply original message
  */
-async function updateMessagewithTranscription(ctx, msg, text, chat, markdown) {
+async function updateMessagewithTranscription(ctx, msg, text, chat, markdown, original_message_id) {
   // Create options
   const options = {}
   if (!text || markdown) {
@@ -195,12 +201,26 @@ async function updateMessagewithTranscription(ctx, msg, text, chat, markdown) {
   }
   if (!text || text.length <= 4000) {
     // Edit message
-    await ctx.telegram.editMessageText(
+    // await ctx.telegram.editMessageText(
+    //   msg.chat.id,
+    //   msg.message_id,
+    //   null,
+    //   text || ctx.i18n.t('speak_clearly'),
+    //   options
+    // )
+
+    //Delete Voice Recognition Message
+    ctx.telegram.deleteMessage(
       msg.chat.id,
-      msg.message_id,
-      null,
-      text || ctx.i18n.t('speak_clearly'),
-      options
+      msg.message_id
+    )
+    console.log("original_message_id: ",original_message_id);
+    
+    //reply original message with Transcription Message
+    await ctx.replyWithMarkdown(
+      text || ctx.i18n.t('speak_clearly'), {
+        reply_to_message_id: original_message_id,
+      }
     )
   } else {
     // Get chunks
