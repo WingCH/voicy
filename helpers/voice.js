@@ -220,7 +220,7 @@ async function updateMessagewithTranscription(ctx, msg, text, chat, markdown, or
 
     if (typeof originalMessage !== 'undefined') {
       // Delete Voice Recognition Message
-      ctx.telegram.deleteMessage(
+      await ctx.telegram.deleteMessage(
         msg.chat.id,
         msg.message_id
       );
